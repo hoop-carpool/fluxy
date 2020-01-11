@@ -43,7 +43,7 @@ open class FluxyStore<S : Any> {
         }
 
     /** Hook for write only property */
-    private var newState: S
+    var newState: S
         get() = throw UnsupportedOperationException("This is a write only property")
         set(value) = performStateChange(value)
 
