@@ -1,13 +1,13 @@
 package com.hoopcarpool.fluxy
 
+import java.lang.reflect.ParameterizedType
+import kotlin.reflect.KClass
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.runBlocking
-import java.lang.reflect.ParameterizedType
-import kotlin.reflect.KClass
 
 open class FluxyStore<S : Any> {
 
@@ -82,7 +82,6 @@ open class FluxyStore<S : Any> {
             subscriptions.map.forEach { (key, value) ->
                 if (action::class == key) {
                     newState = value(action)
-
                 }
             }
 

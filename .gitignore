@@ -201,12 +201,4 @@ gradle-app.setting
 
 \.idea/render\.experimental\.xml
 
-gradlew
-
-gradlew.bat
-
-gradle/wrapper/gradle-wrapper.properties
-
-gradle/wrapper/gradle-wrapper.jar
-
 .idea/.name

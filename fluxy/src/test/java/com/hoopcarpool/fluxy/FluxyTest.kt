@@ -1,5 +1,6 @@
 package com.hoopcarpool.fluxy
 
+/* ktlint-disable no-wildcard-imports */
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.take
@@ -7,6 +8,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+/* ktlint-enable no-wildcard-imports */
 
 class FluxyTest {
 

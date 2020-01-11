@@ -1,6 +1,5 @@
 package com.hoopcarpool.fluxy
 
-
 interface FluxyInterceptor {
     fun intercept(chain: FluxyChain): List<StoresChanges>
 }
@@ -21,7 +20,6 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
             """.trimIndent()
             )
         }
-
 
         val startTime = System.currentTimeMillis()
 
