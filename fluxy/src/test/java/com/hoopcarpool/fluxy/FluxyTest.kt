@@ -22,12 +22,12 @@ class FluxyTest {
     class TestStoreOne : FluxyStore<TestState>() {
 
         init {
-            subscribe<TestAction> {
+            reduce<TestAction> {
                 runBlocking { delay(it.delay) }
                 state.copy(content = it.content)
             }
 
-            subscribe<TestOneAction> {
+            reduce<TestOneAction> {
                 runBlocking { delay(it.delay) }
                 state.copy(content = it.content)
             }
@@ -37,12 +37,12 @@ class FluxyTest {
     class TestStoreTwo : FluxyStore<TestState>() {
 
         init {
-            subscribe<TestAction> {
+            reduce<TestAction> {
                 runBlocking { delay(it.delay) }
                 state.copy(content = it.content)
             }
 
-            subscribe<TestTwoAction> {
+            reduce<TestTwoAction> {
                 runBlocking { delay(it.delay) }
                 state.copy(content = it.content)
             }

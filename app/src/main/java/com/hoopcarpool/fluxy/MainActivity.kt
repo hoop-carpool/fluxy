@@ -35,16 +35,15 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-data class MyState(
-    val number: String = ""
-)
 
 data class MyAction(val number: String) : BaseAction
+
+data class MyState(val number: String)
 
 class MyStore : FluxyStore<MyState>() {
 
     init {
-        subscribe<MyAction> {
+        reduce<MyAction> {
             state.copy(number = it.number)
         }
     }

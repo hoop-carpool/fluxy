@@ -11,8 +11,8 @@ import kotlinx.coroutines.runBlocking
 
 open class FluxyStore<S : Any> {
 
-    protected val subscriptions = SubscriptionMap<S>()
-    protected val subscriptionsAsync = AsyncSubscriptionMap<S>()
+    protected val reducers = ReducerMap<S>()
+    protected val asyncReducers = AsyncReducerMap<S>()
 
     companion object {
         val NO_STATE = Any()
@@ -66,26 +66,26 @@ open class FluxyStore<S : Any> {
         }
     }
 
-    inline fun <reified T : BaseAction> subscribe(noinline block: (T) -> S) {
-        subscriptions.addNew(T::class, block)
+    inline fun <reified T : BaseAction> reduce(noinline block: (T) -> S) {
+        reducers.addNew(T::class, block)
     }
 
-    inline fun <reified T : AsyncAction> subscribeAsync(noinline block: suspend (T) -> S) {
-        subscriptionsAsync.addNewAsync(T::class, block)
+    inline fun <reified T : AsyncAction> asyncReduce(noinline block: suspend (T) -> S) {
+        asyncReducers.addNewAsync(T::class, block)
     }
 
     fun canHandle(action: BaseAction): Boolean =
-        subscriptions.map.containsKey(action::class) || subscriptionsAsync.map.containsKey(action::class)
+        reducers.map.containsKey(action::class) || asyncReducers.map.containsKey(action::class)
 
     fun dispatch(action: BaseAction): S? {
         synchronized(this) {
-            subscriptions.map.forEach { (key, value) ->
+            reducers.map.forEach { (key, value) ->
                 if (action::class == key) {
                     newState = value(action)
                 }
             }
 
-            subscriptionsAsync.map.forEach { (key, value) ->
+            asyncReducers.map.forEach { (key, value) ->
                 if (action::class == key) {
                     runBlocking {
                         newState = value(action)
@@ -96,7 +96,7 @@ open class FluxyStore<S : Any> {
         }
     }
 
-    protected class SubscriptionMap<S> {
+    protected class ReducerMap<S> {
 
         val map: MutableMap<KClass<*>, (BaseAction) -> S> = mutableMapOf()
 
@@ -105,7 +105,7 @@ open class FluxyStore<S : Any> {
         }
     }
 
-    protected class AsyncSubscriptionMap<S> {
+    protected class AsyncReducerMap<S> {
 
         val map: MutableMap<KClass<*>, suspend (BaseAction) -> S> = mutableMapOf()
 
