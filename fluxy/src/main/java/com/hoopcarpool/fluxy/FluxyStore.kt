@@ -1,7 +1,5 @@
 package com.hoopcarpool.fluxy
 
-import java.lang.reflect.ParameterizedType
-import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -11,6 +9,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.lang.reflect.ParameterizedType
+import kotlin.reflect.KClass
 
 open class FluxyStore<S : Any> {
 
@@ -32,6 +32,13 @@ open class FluxyStore<S : Any> {
                 }
             }
             return _state as S
+        }
+
+    /** Hook for write only property */
+    var newState: S
+        get() = throw UnsupportedOperationException("This is a write only property")
+        set(value) {
+            performStateChange(value)
         }
 
     private val channel = BroadcastChannel<S>(Channel.BUFFERED)
