@@ -2,17 +2,19 @@ package com.hoopcarpool.fluxy
 
 import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KClass
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 open class FluxyStore<S : Any> {
 
     protected val reducers = ReducerMap<S>()
-    protected val asyncReducers = AsyncReducerMap<S>()
 
     companion object {
         val NO_STATE = Any()
@@ -42,21 +44,23 @@ open class FluxyStore<S : Any> {
             }
         }
 
-    /** Hook for write only property */
-    var newState: S
-        get() = throw UnsupportedOperationException("This is a write only property")
-        set(value) = performStateChange(value)
-
-    private fun performStateChange(newState: Any) {
-        if (newState != _state) {
-            _state = newState
-            channel.offer(newState as S)
+    suspend inline fun observe(hotStart: Boolean = true, crossinline block: (S) -> Unit) {
+        flow(hotStart).collect {
+            withContext(Dispatchers.Main) { block(it) }
         }
     }
 
+    private fun performStateChange(newState: Any): Boolean {
+        if (newState != _state) {
+            _state = newState
+            channel.offer(newState as S)
+            return true
+        }
+        return false
+    }
+
     open fun initialState(): S {
-        val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
-                as Class<S>
+        val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<S>
         try {
             val constructor = type.getDeclaredConstructor()
             constructor.isAccessible = true
@@ -71,28 +75,22 @@ open class FluxyStore<S : Any> {
     }
 
     inline fun <reified T : AsyncAction> asyncReduce(noinline block: suspend (T) -> S) {
-        asyncReducers.addNewAsync(T::class, block)
+        reducers.addNew(T::class) { t: T -> runBlocking { block(t) } }
     }
 
-    fun canHandle(action: BaseAction): Boolean =
-        reducers.map.containsKey(action::class) || asyncReducers.map.containsKey(action::class)
+    fun canHandle(action: BaseAction): Boolean = reducers.map.containsKey(action::class)
 
     fun dispatch(action: BaseAction): S? {
         synchronized(this) {
-            reducers.map.forEach { (key, value) ->
-                if (action::class == key) {
-                    newState = value(action)
-                }
+            var stateReduced: S? = null
+
+            reducers.map[action::class]?.let { reducer ->
+                val newState = reducer(action)
+                if (performStateChange(newState))
+                    stateReduced = newState
             }
 
-            asyncReducers.map.forEach { (key, value) ->
-                if (action::class == key) {
-                    runBlocking {
-                        newState = value(action)
-                    }
-                }
-            }
-            return state
+            return stateReduced
         }
     }
 
@@ -102,15 +100,6 @@ open class FluxyStore<S : Any> {
 
         fun <T : BaseAction> addNew(clazz: KClass<T>, cb: (T) -> S) {
             map[clazz] = cb as (BaseAction) -> S
-        }
-    }
-
-    protected class AsyncReducerMap<S> {
-
-        val map: MutableMap<KClass<*>, suspend (BaseAction) -> S> = mutableMapOf()
-
-        fun <T : AsyncAction> addNewAsync(clazz: KClass<T>, cb: suspend (T) -> S) {
-            map[clazz] = cb as suspend (BaseAction) -> S
         }
     }
 }

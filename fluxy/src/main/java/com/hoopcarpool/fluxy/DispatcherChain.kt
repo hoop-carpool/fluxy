@@ -1,6 +1,6 @@
 package com.hoopcarpool.fluxy
 
-typealias StoresChanges = Pair<FluxyStore<*>, Any>
+data class StoresChanges(val store: FluxyStore<*>, val newState: Any)
 
 interface FluxyChain {
     val action: BaseAction

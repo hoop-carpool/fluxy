@@ -52,7 +52,7 @@ class StoreInterceptor(private val stores: List<FluxyStore<*>>) : FluxyIntercept
         stores.forEach { store ->
             if (store.canHandle(chain.action)) {
                 val newState = store.dispatch(chain.action)
-                if (newState != null) storesChanged.add(store to newState)
+                if (newState != null) storesChanged.add(StoresChanges(store, newState))
             }
         }
 

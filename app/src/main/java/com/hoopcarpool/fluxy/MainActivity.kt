@@ -1,14 +1,12 @@
 package com.hoopcarpool.fluxy
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
@@ -26,10 +24,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         GlobalScope.launch {
-            myStore.flow().collect {
-                withContext(Dispatchers.Main) {
-                    findViewById<TextView>(R.id.textView).text = it.number
-                }
+            myStore.observe {
+                Log.d("tag", "3")
+                findViewById<TextView>(R.id.textView).text = it.number
             }
         }
     }
@@ -38,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
 data class MyAction(val number: String) : BaseAction
 
-data class MyState(val number: String)
+data class MyState(val number: String = "")
 
 class MyStore : FluxyStore<MyState>() {
 
