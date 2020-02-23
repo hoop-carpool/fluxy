@@ -1,5 +1,7 @@
 package com.hoopcarpool.fluxy
 
+import java.lang.reflect.ParameterizedType
+import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -9,8 +11,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.lang.reflect.ParameterizedType
-import kotlin.reflect.KClass
 
 open class FluxyStore<S : Any> {
 
@@ -88,7 +88,7 @@ open class FluxyStore<S : Any> {
     fun canHandle(action: BaseAction): Boolean = reducers.map.containsKey(action::class)
 
     fun dispatch(action: BaseAction): S? {
-        synchronized(this) {
+        return synchronized(this) {
             var stateReduced: S? = null
 
             reducers.map[action::class]?.let { reducer ->
@@ -97,7 +97,7 @@ open class FluxyStore<S : Any> {
                     stateReduced = newState
             }
 
-            return stateReduced
+            stateReduced
         }
     }
 
@@ -106,6 +106,7 @@ open class FluxyStore<S : Any> {
         val map: MutableMap<KClass<*>, (BaseAction) -> S> = mutableMapOf()
 
         fun <T : BaseAction> addNew(clazz: KClass<T>, cb: (T) -> S) {
+            if (map[clazz] != null) throw UnsupportedOperationException("Reducer already exists for $clazz at this store")
             map[clazz] = cb as (BaseAction) -> S
         }
     }
