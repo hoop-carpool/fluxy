@@ -3,13 +3,13 @@ package com.hoopcarpool.fluxy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class Dispatcher {
+class Dispatcher(private val logger: Logger = DefaultLogger()) {
 
     var stores: List<FluxyStore<*>> = emptyList()
         set(value) {
             field = value
             interceptors = listOf(
-                LogInterceptor(DefaultLogger()),
+                LogInterceptor(logger),
                 StoreInterceptor(value.toList())
             )
         }
