@@ -8,6 +8,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+
 /* ktlint-enable no-wildcard-imports */
 
 class FluxyTest {
@@ -21,7 +22,7 @@ class FluxyTest {
 
     class TestStoreOne : FluxyStore<TestState>() {
 
-        init {
+        override fun init() {
             reduce<TestAction> {
                 runBlocking { delay(it.delay) }
                 state.copy(content = it.content)
@@ -36,7 +37,7 @@ class FluxyTest {
 
     class TestStoreTwo : FluxyStore<TestState>() {
 
-        init {
+        override fun init() {
             reduce<TestAction> {
                 runBlocking { delay(it.delay) }
                 state.copy(content = it.content)
