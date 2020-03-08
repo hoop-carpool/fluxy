@@ -8,6 +8,9 @@ interface Logger {
     fun e(msg: String)
 }
 
+/**
+ * Default [Logger] implementation
+ */
 class DefaultLogger : Logger {
 
     override fun v(msg: String) {

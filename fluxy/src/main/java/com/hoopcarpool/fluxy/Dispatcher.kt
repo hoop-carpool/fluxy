@@ -3,14 +3,22 @@ package com.hoopcarpool.fluxy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Call each store inside [stores] the action dispatched via [dispatch] or [dispatchAsync]
+ */
 class Dispatcher(private val logger: Logger = DefaultLogger()) {
 
+    /**
+     * List of [FluxyStore]s
+     *
+     * Only needed for initialize [StoreInterceptor]
+     */
     var stores: List<FluxyStore<*>> = emptyList()
         set(value) {
             field = value
             interceptors = listOf(
                 LogInterceptor(logger),
-                StoreInterceptor(value.toList())
+                StoreInterceptor(value)
             )
 
             logInit()
@@ -18,10 +26,16 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
 
     private var interceptors = emptyList<FluxyInterceptor>()
 
+    /**
+     * Send the [action] to each store inside [stores]
+     */
     fun dispatch(action: BaseAction) {
         RealFluxyChain(interceptors).proceed(action)
     }
 
+    /**
+     * Send the [action] to each store inside [stores]
+     */
     @FluxyPreview
     suspend fun dispatchAsync(action: AsyncAction) {
         withContext(Dispatchers.IO) {

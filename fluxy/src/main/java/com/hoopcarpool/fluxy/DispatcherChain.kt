@@ -1,5 +1,8 @@
 package com.hoopcarpool.fluxy
 
+/**
+ * Contains the new state that belongs to a [FluxyStore]
+ */
 data class StoresChanges(val store: FluxyStore<*>, val newState: Any)
 
 interface FluxyChain {
@@ -7,6 +10,9 @@ interface FluxyChain {
     fun proceed(): List<StoresChanges>
 }
 
+/**
+ * Basic Chain to give an [BaseAction] to each interceptor
+ */
 class RealFluxyChain(private val interceptors: List<FluxyInterceptor>) : FluxyChain {
 
     override lateinit var action: BaseAction

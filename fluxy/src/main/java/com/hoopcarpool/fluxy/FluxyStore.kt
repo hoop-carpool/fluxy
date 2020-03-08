@@ -12,6 +12,13 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
+/**
+ * Base store.
+ *
+ * Contains a [state]
+ *
+ * Subscribe to [BaseAction] via [reduce]
+ */
 abstract class FluxyStore<S : Any> {
 
     val reducers = ReducerMap<S>()
@@ -45,6 +52,11 @@ abstract class FluxyStore<S : Any> {
 
     private val channel = BroadcastChannel<S>(Channel.BUFFERED)
 
+    /**
+     * Returns the [channel] as a flow
+     *
+     * If [hotStart] is true, emits the current [state]
+     */
     fun flow(hotStart: Boolean = true): Flow<S> = channel
         .asFlow()
         .onStart {
@@ -61,6 +73,9 @@ abstract class FluxyStore<S : Any> {
 
     protected abstract fun init()
 
+    /**
+     * Utility function that emit state changes at Main thread
+     */
     suspend inline fun observe(hotStart: Boolean = true, crossinline block: (S) -> Unit) {
         flow(hotStart).collect {
             withContext(Dispatchers.Main) { block(it) }
@@ -98,6 +113,11 @@ abstract class FluxyStore<S : Any> {
 
     fun canHandle(action: BaseAction): Boolean = reducers.map.containsKey(action::class)
 
+    /**
+     * Execute the reducer for a given [action]
+     *
+     * There's only one reducer per [action] per [FluxyStore]
+     */
     fun dispatch(action: BaseAction): S? {
         return synchronized(this) {
             var stateReduced: S? = null
@@ -112,6 +132,11 @@ abstract class FluxyStore<S : Any> {
         }
     }
 
+    /**
+     * Holder for reducers functions
+     *
+     * A reducer it's a function that given a [BaseAction] returns a [state]
+     */
     class ReducerMap<S> {
 
         val map: MutableMap<KClass<*>, (BaseAction) -> S> = mutableMapOf()

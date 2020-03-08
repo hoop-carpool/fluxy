@@ -4,6 +4,9 @@ interface FluxyInterceptor {
     fun intercept(chain: FluxyChain): List<StoresChanges>
 }
 
+/**
+ * Log each action and the changes that it produced
+ */
 class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
 
     override fun intercept(chain: FluxyChain): List<StoresChanges> {
@@ -45,6 +48,11 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
     }
 }
 
+/**
+ * Final chain Interceptor that dispatch the action to each [FluxyStore]
+ *
+ * Returns a list with the [StoresChanges] produced
+ */
 class StoreInterceptor(private val stores: List<FluxyStore<*>>) : FluxyInterceptor {
 
     override fun intercept(chain: FluxyChain): List<StoresChanges> {
