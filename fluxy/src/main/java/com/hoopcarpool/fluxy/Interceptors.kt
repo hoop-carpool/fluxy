@@ -23,7 +23,7 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
 
         val startTime = System.currentTimeMillis()
 
-        val result = chain.proceed()
+        val storesChangedList = chain.proceed()
 
         val totalTime = System.currentTimeMillis() - startTime
 
@@ -34,14 +34,14 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
 
             """.trimIndent()
 
-        result.forEach { (store, state) ->
+        storesChangedList.forEach { (store, state) ->
             msg += "│   ${store.javaClass.simpleName} = ${state}\n"
         }
 
         msg += "└────────────────────────────────────────────"
 
         logger.i(msg)
-        return result
+        return storesChangedList
     }
 }
 

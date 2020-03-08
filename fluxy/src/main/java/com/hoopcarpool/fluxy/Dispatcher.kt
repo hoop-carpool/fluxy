@@ -12,6 +12,8 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
                 LogInterceptor(logger),
                 StoreInterceptor(value.toList())
             )
+
+            logInit()
         }
 
     private var interceptors = emptyList<FluxyInterceptor>()
@@ -20,9 +22,17 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
         RealFluxyChain(interceptors).proceed(action)
     }
 
+    @FluxyPreview
     suspend fun dispatchAsync(action: AsyncAction) {
         withContext(Dispatchers.IO) {
             RealFluxyChain(interceptors).proceed(action)
+        }
+    }
+
+    private fun logInit() {
+        logger.d("Dispatcher initialized with this stores:")
+        stores.forEach {
+            logger.d("|-> ${it::class.java.simpleName} with state = ${it.state} in ${it.initTime}ms")
         }
     }
 }

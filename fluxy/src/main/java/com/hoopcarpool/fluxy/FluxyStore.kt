@@ -12,13 +12,15 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
-open class FluxyStore<S : Any> {
+abstract class FluxyStore<S : Any> {
 
-    protected val reducers = ReducerMap<S>()
+    val reducers = ReducerMap<S>()
 
     companion object {
         val NO_STATE = Any()
     }
+
+    val initTime: Long
 
     private var _state: Any? = NO_STATE
 
@@ -51,16 +53,24 @@ open class FluxyStore<S : Any> {
             }
         }
 
+    init {
+        val startTime = System.currentTimeMillis()
+        init()
+        initTime = System.currentTimeMillis() - startTime
+    }
+
+    protected abstract fun init()
+
     suspend inline fun observe(hotStart: Boolean = true, crossinline block: (S) -> Unit) {
         flow(hotStart).collect {
             withContext(Dispatchers.Main) { block(it) }
         }
     }
 
-    private fun performStateChange(newState: Any): Boolean {
+    private fun performStateChange(newState: S): Boolean {
         if (newState != _state) {
             _state = newState
-            channel.offer(newState as S)
+            channel.offer(newState)
             return true
         }
         return false
@@ -81,6 +91,7 @@ open class FluxyStore<S : Any> {
         reducers.addNew(T::class, block)
     }
 
+    @FluxyPreview
     inline fun <reified T : AsyncAction> asyncReduce(noinline block: suspend (T) -> S) {
         reducers.addNew(T::class) { t: T -> runBlocking { block(t) } }
     }
@@ -101,7 +112,7 @@ open class FluxyStore<S : Any> {
         }
     }
 
-    protected class ReducerMap<S> {
+    class ReducerMap<S> {
 
         val map: MutableMap<KClass<*>, (BaseAction) -> S> = mutableMapOf()
 

@@ -50,7 +50,7 @@ data class MyState(
 
 class MyStore(val controller: MyController) : FluxyStore<MyState>() {
 
-    init {
+    override fun init() {
         reduce<MyAction> {
             state.copy(number = it.number)
         }
