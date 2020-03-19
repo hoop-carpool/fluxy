@@ -23,9 +23,11 @@ class UtilsTest {
     fun setup() {
         storeOne = TestStoreOne()
         storeTwo = TestStoreTwo()
+        val storeList = listOf(storeOne, storeTwo)
         dispatcher = Dispatcher().apply {
-            stores = listOf(storeOne, storeTwo)
+            stores = storeList
         }
+        storeList.initAll()
     }
 
     @Test(timeout = 10000)
