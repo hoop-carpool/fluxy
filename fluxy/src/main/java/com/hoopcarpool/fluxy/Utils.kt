@@ -32,3 +32,12 @@ fun <R> StateMerger<R>.flow(hotStart: Boolean = true): Flow<List<R>> {
             storeAndMappers.map { (_, fn) -> fn() }.toList()
         }.distinctUntilChanged()
 }
+
+/** Extension util for init a list of [FluxyStore] */
+fun Iterable<FluxyStore<*>>.initAll() {
+    forEach {
+        val initTime = System.currentTimeMillis()
+        it.init()
+        it.initTime = System.currentTimeMillis() - initTime
+    }
+}

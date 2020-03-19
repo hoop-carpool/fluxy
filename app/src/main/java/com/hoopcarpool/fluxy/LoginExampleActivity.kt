@@ -8,10 +8,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 class LoginExampleActivity : AppCompatActivity() {
@@ -24,6 +21,7 @@ class LoginExampleActivity : AppCompatActivity() {
         val loginController = LoginController(dispatcher)
         val loginStore = LoginStore(loginController)
         dispatcher.stores = listOf(loginStore)
+        listOf(loginStore).initAll()
 
         GlobalScope.launch {
             loginStore.observe {

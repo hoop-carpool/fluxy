@@ -24,7 +24,8 @@ abstract class FluxyStore<S : Any> {
         val NO_STATE = Any()
     }
 
-    val initTime: Long
+    /** Var por testing purposes  */
+    var initTime: Long = 0
 
     private var _state: Any? = NO_STATE
 
@@ -63,13 +64,7 @@ abstract class FluxyStore<S : Any> {
             }
         }.distinctUntilChanged()
 
-    init {
-        val startTime = System.currentTimeMillis()
-        init()
-        initTime = System.currentTimeMillis() - startTime
-    }
-
-    protected abstract fun init()
+    abstract fun init()
 
     /**
      * Utility function that emit state changes at Main thread
