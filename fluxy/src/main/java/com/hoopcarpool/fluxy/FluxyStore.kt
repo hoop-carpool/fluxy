@@ -5,10 +5,7 @@ import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
@@ -59,11 +56,12 @@ abstract class FluxyStore<S : Any> {
      */
     fun flow(hotStart: Boolean = true): Flow<S> = channel
         .asFlow()
+        .flowOn(Dispatchers.Main)
         .onStart {
             if (hotStart) {
                 emit(state)
             }
-        }
+        }.distinctUntilChanged()
 
     init {
         val startTime = System.currentTimeMillis()

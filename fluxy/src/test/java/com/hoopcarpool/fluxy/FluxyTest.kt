@@ -1,6 +1,5 @@
 package com.hoopcarpool.fluxy
 
-/* ktlint-disable no-wildcard-imports */
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.take
@@ -9,49 +8,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-/* ktlint-enable no-wildcard-imports */
-
 class FluxyTest {
-
-    data class TestAction(val content: String, val delay: Long = 0) : BaseAction
-    data class TestTwoAction(val content: String, val delay: Long = 0) : BaseAction
-    data class TestOneAction(val content: String, val delay: Long = 0) : BaseAction
-    data class TestNoAction(val content: String, val delay: Long = 0) : BaseAction
-
-    data class TestState(val content: String = "initial")
-
-    class TestStoreOne : FluxyStore<TestState>() {
-
-        override fun init() {
-            reduce<TestAction> {
-                runBlocking { delay(it.delay) }
-                state.copy(content = it.content)
-            }
-
-            reduce<TestOneAction> {
-                runBlocking { delay(it.delay) }
-                state.copy(content = it.content)
-            }
-        }
-    }
-
-    class TestStoreTwo : FluxyStore<TestState>() {
-
-        override fun init() {
-            reduce<TestAction> {
-                runBlocking { delay(it.delay) }
-                state.copy(content = it.content)
-            }
-
-            reduce<TestTwoAction> {
-                runBlocking { delay(it.delay) }
-                state.copy(content = it.content)
-            }
-        }
-    }
 
     @get:Rule
     var repeatRule = RepeatRule()
+
+    @get:Rule
+    val scope = CoroutineTestRule()
 
     var storeOne = TestStoreOne()
     var storeTwo = TestStoreTwo()
