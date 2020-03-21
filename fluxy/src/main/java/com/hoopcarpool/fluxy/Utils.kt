@@ -15,10 +15,7 @@ class StateMerger<R> {
 /**
  * Builder function for [StateMerger].
  */
-inline fun <R> mergeStates(
-    hotStart: Boolean = true,
-    crossinline builder: StateMerger<R>.() -> Unit
-): Flow<List<R>> {
+inline fun <R> mergeStates(hotStart: Boolean = true, crossinline builder: StateMerger<R>.() -> Unit): Flow<List<R>> {
     return StateMerger<R>().apply { builder() }.flow(hotStart)
 }
 

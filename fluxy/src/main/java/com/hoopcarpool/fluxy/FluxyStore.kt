@@ -18,11 +18,14 @@ import kotlinx.coroutines.withContext
  */
 abstract class FluxyStore<S : Any> {
 
-    val reducers = ReducerMap<S>()
-
     companion object {
         val NO_STATE = Any()
     }
+
+    /**
+     * Map that contains the reducers for each [BaseAction]
+     */
+    val reducers: MutableMap<KClass<*>, (BaseAction) -> Unit> = mutableMapOf()
 
     /** Var por testing purposes  */
     var initTime: Long = 0
@@ -47,6 +50,11 @@ abstract class FluxyStore<S : Any> {
         set(value) {
             performStateChange(value)
         }
+
+    /** Extension for setting a state as a new state */
+    fun S.asNewState() {
+        performStateChange(this)
+    }
 
     private val channel = BroadcastChannel<S>(Channel.BUFFERED)
 
@@ -95,33 +103,34 @@ abstract class FluxyStore<S : Any> {
         }
     }
 
-    inline fun <reified T : BaseAction> reduce(noinline block: (T) -> S) {
-        reducers.addNew(T::class, block)
+    inline fun <reified A : BaseAction> reduce(noinline block: (A) -> Unit) {
+        reducers.addNew(A::class, block)
     }
 
     @FluxyPreview
-    inline fun <reified T : AsyncAction> asyncReduce(noinline block: suspend (T) -> S) {
-        reducers.addNew(T::class) { t: T -> runBlocking { block(t) } }
+    inline fun <reified A : AsyncAction> asyncReduce(noinline block: suspend (A) -> Unit) {
+        reducers.addNew(A::class) { t: A -> runBlocking { block(t) } }
     }
 
-    fun canHandle(action: BaseAction): Boolean = reducers.map.containsKey(action::class)
+    /** Returns if the store has a reducer for a [BaseAction] */
+    fun canHandle(action: BaseAction): Boolean = reducers.containsKey(action::class)
 
     /**
-     * Execute the reducer for a given [action]
+     * Execute the reducer for a given [BaseAction]
      *
-     * There's only one reducer per [action] per [FluxyStore]
+     * There's only one reducer per [BaseAction] per [FluxyStore]
      */
+    var reducing = false
     fun dispatch(action: BaseAction): S? {
         return synchronized(this) {
-            var stateReduced: S? = null
+            if (reducing) throw CyclicActionDispatchException(action, this)
 
-            reducers.map[action::class]?.let { reducer ->
-                val newState = reducer(action)
-                if (performStateChange(newState))
-                    stateReduced = newState
-            }
+            reducing = true
+            val oldState = state
+            reducers[action::class]?.let { reducer -> reducer(action) }
+            reducing = false
 
-            stateReduced
+            if (oldState != state) state else null
         }
     }
 
@@ -130,13 +139,9 @@ abstract class FluxyStore<S : Any> {
      *
      * A reducer it's a function that given a [BaseAction] returns a [state]
      */
-    class ReducerMap<S> {
-
-        val map: MutableMap<KClass<*>, (BaseAction) -> S> = mutableMapOf()
-
-        fun <T : BaseAction> addNew(clazz: KClass<T>, cb: (T) -> S) {
-            if (map[clazz] != null) throw UnsupportedOperationException("Reducer already exists for $clazz at this store")
-            map[clazz] = cb as (BaseAction) -> S
-        }
+    @Suppress("UNCHECKED_CAST")
+    fun <T : BaseAction> MutableMap<KClass<*>, (BaseAction) -> Unit>.addNew(clazz: KClass<T>, cb: (T) -> Unit) {
+        if (this[clazz] != null) throw DuplicateReducerException("$clazz")
+        this[clazz] = cb as (BaseAction) -> Unit
     }
 }

@@ -27,7 +27,6 @@ class UtilsTest {
         dispatcher = Dispatcher().apply {
             stores = storeList
         }
-        storeList.initAll()
     }
 
     @Test(timeout = 10000)

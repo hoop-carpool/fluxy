@@ -1,6 +1,7 @@
 package com.hoopcarpool.fluxy
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -21,10 +22,10 @@ class LoginExampleActivity : AppCompatActivity() {
         val loginController = LoginController(dispatcher)
         val loginStore = LoginStore(loginController)
         dispatcher.stores = listOf(loginStore)
-        listOf(loginStore).initAll()
 
         GlobalScope.launch {
             loginStore.observe {
+                Log.d("LoginExampleActivity", it.toString())
                 when (val result = it.loginResult) {
                     is Result.Success -> {
                         findViewById<ProgressBar>(R.id.progressBar).visibility = View.GONE
@@ -53,7 +54,6 @@ class LoginExampleActivity : AppCompatActivity() {
 
             dispatcher.dispatch(LoginAction(username, password))
         }
-
     }
 }
 
@@ -69,11 +69,10 @@ class LoginStore(val loginController: LoginController) : FluxyStore<LoginState>(
     override fun init() {
         reduce<LoginAction> {
             loginController.doLogin(it.username, it.password)
-            state.copy(loginResult = Result.Loading())
         }
 
         reduce<LoginResultAction> {
-            state.copy(loginResult = it.loginResult)
+            state.copy(loginResult = it.loginResult).asNewState()
         }
     }
 }

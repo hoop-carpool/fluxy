@@ -15,12 +15,12 @@ class TestStoreOne : FluxyStore<TestState>() {
     override fun init() {
         reduce<TestAction> {
             runBlocking { delay(it.delay) }
-            state.copy(content = it.content)
+            state.copy(content = it.content).asNewState()
         }
 
         reduce<TestOneAction> {
             runBlocking { delay(it.delay) }
-            state.copy(content = it.content)
+            state.copy(content = it.content).asNewState()
         }
     }
 }
@@ -30,12 +30,12 @@ class TestStoreTwo : FluxyStore<TestState>() {
     override fun init() {
         reduce<TestAction> {
             runBlocking { delay(it.delay) }
-            state.copy(content = it.content)
+            state.copy(content = it.content).asNewState()
         }
 
         reduce<TestTwoAction> {
             runBlocking { delay(it.delay) }
-            state.copy(content = it.content)
+            state.copy(content = it.content).asNewState()
         }
     }
 }

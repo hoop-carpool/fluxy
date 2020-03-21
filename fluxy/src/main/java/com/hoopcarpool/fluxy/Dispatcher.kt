@@ -21,6 +21,7 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
                 StoreInterceptor(value)
             )
 
+            stores.initAll()
             logInit()
         }
 
@@ -44,9 +45,36 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
     }
 
     private fun logInit() {
-        logger.d("Dispatcher initialized with this stores:")
-        stores.forEach {
-            logger.d("|-> ${it::class.java.simpleName} with state = ${it.state} in ${it.initTime}ms")
+        val storesLog = stores.joinToString("\n") {
+            "├-> ${it::class.java.simpleName} with state = ${it.state} in ${it.initTime}ms"
         }
+
+        val msg = """
+            
+            ═════════════════════════════════════════
+            
+            
+               ▄████████  ▄█       ███    █▄  ▀████    ▐████▀ ▄██   ▄   
+              ███    ███ ███       ███    ███   ███▌   ████▀  ███   ██▄ 
+              ███    █▀  ███       ███    ███    ███  ▐███    ███▄▄▄███ 
+             ▄███▄▄▄     ███       ███    ███    ▀███▄███▀    ▀▀▀▀▀▀███ 
+            ▀▀███▀▀▀     ███       ███    ███    ████▀██▄     ▄██   ███ 
+              ███        ███       ███    ███   ▐███  ▀███    ███   ███ 
+              ███        ███▌    ▄ ███    ███  ▄███     ███▄  ███   ███ 
+              ███        █████▄▄██ ████████▀  ████       ███▄  ▀█████▀  
+                         ▀
+                         
+            ═════════════════════════════════════════
+            
+            Dispatcher was initialized with this stores:
+            
+            ┌────────────────────────────────────────
+            $storesLog
+            └────────────────────────────────────────
+    
+            ▲,▲,▼,▼,◄,►,◄,►,(B),(A),[Start]
+        """.trimIndent()
+
+        logger.d(msg)
     }
 }
