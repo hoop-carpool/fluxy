@@ -29,7 +29,6 @@ class FluxyTest {
         dispatcher = Dispatcher().apply {
             stores = storeList
         }
-        storeList.initAll()
     }
 
     @Test

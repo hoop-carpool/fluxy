@@ -18,7 +18,7 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
                 " \n" +
                         """ 
                 ┌────────────────────────────────────────────
-                ├─> ${action::class.simpleName} = $action
+                │─> ${action::class.simpleName} = $action
                 └────────────────────────────────────────────
             """.trimIndent()
             )
@@ -33,7 +33,7 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
         var msg = " \n" +
                 """ 
                 ┌────────────────────────────────────────────
-                ├─> ${action::class.simpleName} [${totalTime}ms] = $action
+                │─> ${action::class.simpleName} [${totalTime}ms] = $action
 
             """.trimIndent()
 
