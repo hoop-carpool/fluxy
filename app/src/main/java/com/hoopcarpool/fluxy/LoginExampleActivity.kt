@@ -8,8 +8,10 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.hoopcarpool.timberlogger.TimberLogger
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import kotlin.random.Random
 
 class LoginExampleActivity : AppCompatActivity() {
@@ -18,11 +20,13 @@ class LoginExampleActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login_example)
 
-        val dispatcher = Dispatcher()
+        Timber.plant(Timber.DebugTree())
+
+        val dispatcher = Dispatcher(TimberLogger())
         val loginController = LoginController(dispatcher)
         val loginStore = LoginStore(loginController)
         dispatcher.stores = listOf(loginStore)
-
+        
         GlobalScope.launch {
             loginStore.observe {
                 Log.d("LoginExampleActivity", it.toString())
