@@ -49,9 +49,8 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
             "├-> ${it::class.java.simpleName} with state = ${it.state} in ${it.initTime}ms"
         }
 
-        val msg = """
-            
-            ═════════════════════════════════════════
+        val msg = " \n" + """
+            ══════════════════════════════════════════════════════════════
             
             
                ▄████████  ▄█       ███    █▄  ▀████    ▐████▀ ▄██   ▄   
@@ -64,15 +63,16 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
               ███        █████▄▄██ ████████▀  ████       ███▄  ▀█████▀  
                          ▀
                          
-            ═════════════════════════════════════════
-            
+            ══════════════════════════════════════════════════════════════
+                        
             Dispatcher was initialized with this stores:
             
             ┌────────────────────────────────────────
             $storesLog
             └────────────────────────────────────────
     
-            ▲,▲,▼,▼,◄,►,◄,►,(B),(A),[Start]
+            in case of emergency press: ▲,▲,▼,▼,◄,►,◄,►,(B),(A),[Start]
+            
         """.trimIndent()
 
         logger.d(msg)
