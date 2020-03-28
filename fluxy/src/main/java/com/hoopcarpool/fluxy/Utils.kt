@@ -38,3 +38,18 @@ fun Iterable<FluxyStore<*>>.initAll() {
         it.initTime = System.currentTimeMillis() - initTime
     }
 }
+
+/**
+ * Suspend current coroutine until the desired [Result] is in a concluded state.
+ *
+ * Notice that this doesnt use a hot subscription, this is intended only for async actions.
+ */
+suspend fun <S : Any, T : Result<*>> FluxyStore<S>.waitFor(cb: (S) -> T): S {
+    var state: S = this.state
+    flow(false)
+        .takeWhile { !(cb(it).hasConcluded()) }
+        .collect {
+            state = it
+        }
+    return state
+}

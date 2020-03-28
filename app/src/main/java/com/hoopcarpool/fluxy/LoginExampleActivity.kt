@@ -26,7 +26,7 @@ class LoginExampleActivity : AppCompatActivity() {
         val loginController = LoginController(dispatcher)
         val loginStore = LoginStore(loginController)
         dispatcher.stores = listOf(loginStore)
-        
+
         GlobalScope.launch {
             loginStore.observe {
                 Log.d("LoginExampleActivity", it.toString())
@@ -51,11 +51,9 @@ class LoginExampleActivity : AppCompatActivity() {
             }
         }
 
-
         findViewById<Button>(R.id.doLogin).setOnClickListener {
             val username = findViewById<EditText>(R.id.username_edit_text).text.toString()
             val password = findViewById<EditText>(R.id.password_edit_text).text.toString()
-
             dispatcher.dispatch(LoginAction(username, password))
         }
     }
@@ -72,6 +70,7 @@ class LoginStore(val loginController: LoginController) : FluxyStore<LoginState>(
 
     override fun init() {
         reduce<LoginAction> {
+            state.copy(loginResult = Result.Loading()).asNewState()
             loginController.doLogin(it.username, it.password)
         }
 
@@ -84,13 +83,13 @@ class LoginStore(val loginController: LoginController) : FluxyStore<LoginState>(
 class LoginController(private val dispatcher: Dispatcher) {
     fun doLogin(username: String, password: String) {
         GlobalScope.launch {
-            kotlinx.coroutines.delay(2000) // Simulate an API Call
+            kotlinx.coroutines.delay(1337) // Simulate an API Call
             val loginApiResultSuccess = Random.nextBoolean()
 
             if (loginApiResultSuccess) {
                 dispatcher.dispatch(LoginResultAction(Result.Success("ASDFGHJKLQWERTYUIOP")))
             } else {
-                dispatcher.dispatch(LoginResultAction(Result.Failure(exception = Exception("Invalid username"))))
+                dispatcher.dispatch(LoginResultAction(Result.Failure(exception = Exception("Invalid username = $username"))))
             }
         }
     }
