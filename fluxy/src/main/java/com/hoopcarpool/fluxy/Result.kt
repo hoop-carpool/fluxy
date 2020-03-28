@@ -10,4 +10,9 @@ sealed class Result<T> {
     class Empty<T> : Result<T>() {
         override fun toString() = "Empty()"
     }
+
+    /**
+     * Return if current result is in a completed state
+     */
+    fun hasConcluded() = this is Success || this is Failure
 }
