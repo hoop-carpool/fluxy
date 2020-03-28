@@ -67,6 +67,7 @@ allprojects {
     }
 }
 dependencies {
-    implementation "com.github.hoop-carpool:fluxy:x.y.z"  
+    implementation "com.github.hoop-carpool.fluxy:fluxy:x.y.z"  
+    implementation "com.github.hoop-carpool.fluxy:timberlogger:x.y.z" // Optional default logger implementation using Timber
 }
 ```
