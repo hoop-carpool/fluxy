@@ -26,3 +26,8 @@ dependencies {
     implementation project(":fluxy")
     implementation 'com.jakewharton.timber:timber:4.7.1'
 }
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}

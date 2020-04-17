@@ -19,3 +19,7 @@ dependencies {
 ktlintCheck.dependsOn "ktlintFormat"
 compileKotlin.dependsOn "ktlintCheck"
 build.dependsOn "ktlintCheck"
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+}
