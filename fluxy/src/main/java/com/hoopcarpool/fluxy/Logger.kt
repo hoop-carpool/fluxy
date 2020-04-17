@@ -1,5 +1,8 @@
 package com.hoopcarpool.fluxy
 
+/**
+ * Interface to decouple system log from fluxy
+ */
 interface Logger {
     fun v(msg: String)
     fun d(msg: String)
