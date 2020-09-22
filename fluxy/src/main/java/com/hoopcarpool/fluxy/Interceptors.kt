@@ -16,11 +16,11 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
         if (action is AsyncAction) {
             logger.i(
                 " \n" +
-                        """ 
+                    """ 
                 ┌────────────────────────────────────────────
                 │─> ${action::class.simpleName} = $action
                 └────────────────────────────────────────────
-            """.trimIndent()
+                    """.trimIndent()
             )
         }
 
@@ -31,7 +31,7 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
         val totalTime = System.currentTimeMillis() - startTime
 
         var msg = " \n" +
-                """ 
+            """ 
                 ┌────────────────────────────────────────────
                 │─> ${action::class.simpleName} [${totalTime}ms] = $action
 

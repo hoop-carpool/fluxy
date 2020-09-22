@@ -202,3 +202,5 @@ gradle-app.setting
 \.idea/render\.experimental\.xml
 
 .idea/.name
+
+.idea/jarRepositories.xml
