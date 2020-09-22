@@ -1,13 +1,13 @@
 package com.hoopcarpool.fluxy
 
-import java.lang.reflect.ParameterizedType
-import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.lang.reflect.ParameterizedType
+import kotlin.reflect.KClass
 
 /**
  * Base store.
