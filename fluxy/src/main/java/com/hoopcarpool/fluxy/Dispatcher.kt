@@ -18,7 +18,7 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
             field = value
             interceptors = listOf(
                 LogInterceptor(logger),
-                StoreInterceptor(value)
+                StoreInterceptor(logger, value)
             )
 
             stores.initAll()

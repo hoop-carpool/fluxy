@@ -56,21 +56,15 @@ abstract class FluxyStore<S : Any> {
         performStateChange(this)
     }
 
-    private val channel = BroadcastChannel<S>(Channel.BUFFERED)
+    private val stateFlow = MutableStateFlow(state)
 
     /**
      * Returns the [channel] as a flow
      *
      * If [hotStart] is true, emits the current [state]
      */
-    fun flow(hotStart: Boolean = true): Flow<S> = channel
-        .asFlow()
-        .flowOn(Dispatchers.Main)
-        .onStart {
-            if (hotStart) {
-                emit(state)
-            }
-        }.distinctUntilChanged()
+    fun flow(hotStart: Boolean = true): Flow<S> =
+        stateFlow.drop(count = if(hotStart) 0 else 1).distinctUntilChanged().flowOn(Dispatchers.Main)
 
     abstract fun init()
 
@@ -86,7 +80,7 @@ abstract class FluxyStore<S : Any> {
     private fun performStateChange(newState: S): Boolean {
         if (newState != _state) {
             _state = newState
-            channel.offer(newState)
+            stateFlow.value = newState
             return true
         }
         return false

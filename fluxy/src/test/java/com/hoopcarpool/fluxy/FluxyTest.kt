@@ -98,7 +98,7 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(10)
+    @Repeat(2)
     fun `dispatch wait for all stores to finish`() {
         val states = mutableListOf<TestState>()
         val job = GlobalScope.launch(start = CoroutineStart.UNDISPATCHED) {
@@ -117,7 +117,7 @@ class FluxyTest {
             dispatcher.dispatch(TestOneAction("test1"))
         }
         GlobalScope.launch(Dispatchers.IO) {
-            dispatcher.dispatch(TestTwoAction("test1", 500))
+            dispatcher.dispatch(TestTwoAction("test1", 50))
         }
 
         runBlocking {
@@ -132,16 +132,16 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(10)
+    @Repeat(4)
     fun `multi dispatch`() {
         runBlocking {
             val job = GlobalScope.launch {
-                dispatcher.dispatch(TestOneAction("test1", 500))
+                dispatcher.dispatch(TestOneAction("test1", 50))
             }
 
             Assert.assertFalse(storeOne.state.content == "test1")
 
-            delay(50)
+            delay(10)
 
             dispatcher.dispatch(TestOneAction("test2"))
             job.join()
@@ -180,18 +180,18 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(10)
+    @Repeat(2)
     fun `one store dont block others action`() {
         runBlocking {
             GlobalScope.launch {
-                dispatcher.dispatch(TestOneAction("test1", 500))
+                dispatcher.dispatch(TestOneAction("test1", 2000))
             }
 
             Assert.assertFalse(storeOne.state.content == "test1")
 
             delay(50)
 
-            dispatcher.dispatch(TestAction("test2"))
+            dispatcher.dispatch(TestTwoAction("test2"))
 
             Assert.assertTrue(storeTwo.state.content == "test2")
         }
