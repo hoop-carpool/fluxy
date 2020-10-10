@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="40dp"
-    tools:context=".LoginExampleActivity">
+    tools:context=".LoginActivity">
 
     <Button
         android:id="@+id/doLogin"
