@@ -53,12 +53,13 @@ class LogInterceptor(private val logger: Logger) : FluxyInterceptor {
  *
  * Returns a list with the [StoresChanges] produced
  */
-class StoreInterceptor(private val stores: List<FluxyStore<*>>) : FluxyInterceptor {
+class StoreInterceptor(private val logger: Logger, private val stores: List<FluxyStore<*>>) : FluxyInterceptor {
 
     override fun intercept(chain: FluxyChain): List<StoresChanges> {
         val storesChanged = mutableListOf<StoresChanges>()
         stores.forEach { store ->
             if (store.canHandle(chain.action)) {
+                logger.d("Dispatching ${chain.action} on ${store::class.java.name} ")
                 val newState = store.dispatch(chain.action)
                 if (newState != null) storesChanged.add(StoresChanges(store, newState))
             }

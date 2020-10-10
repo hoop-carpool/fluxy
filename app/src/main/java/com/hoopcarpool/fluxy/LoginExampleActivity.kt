@@ -29,7 +29,7 @@ class LoginExampleActivity : AppCompatActivity() {
 
         GlobalScope.launch {
             loginStore.observe {
-                Log.d("LoginExampleActivity", it.toString())
+                Timber.d(it.toString())
                 when (val result = it.loginResult) {
                     is Result.Success -> {
                         findViewById<ProgressBar>(R.id.progressBar).visibility = View.GONE
@@ -66,7 +66,7 @@ data class LoginState(
     val loginResult: Result<String> = Result.Empty()
 )
 
-class LoginStore(val loginController: LoginController) : FluxyStore<LoginState>() {
+class LoginStore(private val loginController: LoginController) : FluxyStore<LoginState>() {
 
     override fun init() {
         reduce<LoginAction> {
