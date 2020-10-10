@@ -7,7 +7,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import kotlin.random.Random
 
 class FluxyTest {
 
@@ -82,9 +81,9 @@ class FluxyTest {
                 }
             }
 
-            dispatcher.dispatch(TestOneAction("test1",1))
-            dispatcher.dispatch(TestOneAction("test2",1))
-            dispatcher.dispatch(TestOneAction("test3",1))
+            dispatcher.dispatch(TestOneAction("test1", 1))
+            dispatcher.dispatch(TestOneAction("test2", 1))
+            dispatcher.dispatch(TestOneAction("test3", 1))
 
             Assert.assertTrue(storeOne.state.content == "test3")
             Assert.assertTrue(storeTwo.state.content == "initial")
@@ -252,6 +251,26 @@ class FluxyTest {
             Assert.assertTrue(storeOne.state.content == "1")
             Assert.assertTrue(storeTwo.state.content == "2")
         }
+    }
 
+    @Test
+    @Repeat(3)
+    fun `distinct until change`() {
+        runBlocking {
+            val states = mutableListOf<TestState>()
+
+            GlobalScope.launch {
+                storeOne.flow(false).take(1).collect {
+                    states.add(it)
+                }
+            }
+            delay(1)
+            dispatcher.dispatch(TestOneAction("test"))
+            dispatcher.dispatch(TestOneAction("test"))
+            dispatcher.dispatch(TestOneAction("test"))
+
+            Assert.assertTrue(states.size == 1)
+            Assert.assertTrue(storeOne.state.content == "test")
+        }
     }
 }

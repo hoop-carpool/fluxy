@@ -94,7 +94,7 @@ abstract class FluxyStore<S : Any> {
      *
      * There's only one reducer per [BaseAction] per [FluxyStore]
      */
-    var reducing = false
+    private var reducing = false
     fun dispatch(action: BaseAction): S? {
         return synchronized(this) {
             if (reducing) throw CyclicActionDispatchException(action, this)
@@ -117,5 +117,12 @@ abstract class FluxyStore<S : Any> {
     fun <T : BaseAction> MutableMap<KClass<*>, (BaseAction) -> Unit>.addNew(clazz: KClass<T>, cb: (T) -> Unit) {
         if (this[clazz] != null) throw DuplicateReducerException("$clazz")
         this[clazz] = cb as (BaseAction) -> Unit
+    }
+
+    /**
+     * Suspend function until desirable [Result] where in a concluded state
+     */
+    suspend fun <R> onConcluded(hotStart: Boolean = true, select: (S) -> Result<R>): ConcludedResult<R> {
+        return flow(hotStart).map { select(it) }.dropWhile { !it.hasConcluded() }.take(1).first().conclude()!!
     }
 }
