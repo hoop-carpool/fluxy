@@ -31,7 +31,21 @@ class Dispatcher(private val logger: Logger = DefaultLogger()) {
      * Send the [action] to each store inside [stores]
      */
     fun dispatch(action: BaseAction) {
-        RealFluxyChain(interceptors).proceed(action)
+        if (dispatchingStrict) dispatchStrict(action) else RealFluxyChain(interceptors).proceed(action)
+    }
+
+    /**
+     * Send the [action] to each store inside [stores]
+     *
+     * This method allows only to one action be dispatching at the same time
+     */
+    var dispatchingStrict = false
+    fun dispatchStrict(action: BaseAction) {
+        synchronized(this) {
+            dispatchingStrict = true
+            RealFluxyChain(interceptors).proceed(action)
+        }
+        dispatchingStrict = false
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.hoopcarpool.fluxy
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -18,10 +19,6 @@ import kotlin.reflect.KClass
  */
 abstract class FluxyStore<S : Any> {
 
-    companion object {
-        val NO_STATE = Any()
-    }
-
     /**
      * Map that contains the reducers for each [BaseAction]
      */
@@ -30,19 +27,8 @@ abstract class FluxyStore<S : Any> {
     /** Var por testing purposes  */
     var initTime: Long = 0
 
-    private var _state: Any? = NO_STATE
-
     val state: S
-        get() {
-            if (_state === NO_STATE) {
-                synchronized(this) {
-                    if (_state === NO_STATE) {
-                        _state = initialState()
-                    }
-                }
-            }
-            return _state as S
-        }
+        get() = stateFlow.value
 
     /** Hook for write only property */
     var newState: S
@@ -52,19 +38,16 @@ abstract class FluxyStore<S : Any> {
         }
 
     /** Extension for setting a state as a new state */
-    fun S.asNewState() {
-        performStateChange(this)
-    }
+    fun S.asNewState() = performStateChange(this)
 
-    private val stateFlow = MutableStateFlow(state)
+    private val stateFlow = MutableStateFlow(initialState())
 
     /**
      * Returns the [channel] as a flow
      *
      * If [hotStart] is true, emits the current [state]
      */
-    fun flow(hotStart: Boolean = true): Flow<S> =
-        stateFlow.drop(count = if(hotStart) 0 else 1).distinctUntilChanged().flowOn(Dispatchers.Main)
+    fun flow(hotStart: Boolean = true): Flow<S> = stateFlow.drop(count = if(hotStart) 0 else 1).distinctUntilChanged()
 
     abstract fun init()
 
@@ -78,15 +61,12 @@ abstract class FluxyStore<S : Any> {
     }
 
     private fun performStateChange(newState: S): Boolean {
-        if (newState != _state) {
-            _state = newState
-            stateFlow.value = newState
-            return true
-        }
-        return false
+        if (newState != state) stateFlow.value = newState
+        return newState != state
     }
 
-    open fun initialState(): S {
+    @Suppress("UNCHECKED_CAST")
+    private fun initialState(): S {
         val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<S>
         try {
             val constructor = type.getDeclaredConstructor()

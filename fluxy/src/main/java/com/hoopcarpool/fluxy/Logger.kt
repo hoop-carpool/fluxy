@@ -17,22 +17,22 @@ interface Logger {
 class DefaultLogger : Logger {
 
     override fun v(msg: String) {
-        println("V/$msg")
+        println("${System.currentTimeMillis()} V/$msg")
     }
 
     override fun d(msg: String) {
-        println("D/$msg")
+        println("${System.currentTimeMillis()} D/$msg")
     }
 
     override fun i(msg: String) {
-        println("I/$msg")
+        println("${System.currentTimeMillis()} I/$msg")
     }
 
     override fun w(msg: String) {
-        println("W/$msg")
+        println("${System.currentTimeMillis()} W/$msg")
     }
 
     override fun e(msg: String) {
-        println("E/$msg")
+        println("${System.currentTimeMillis()} E/$msg")
     }
 }

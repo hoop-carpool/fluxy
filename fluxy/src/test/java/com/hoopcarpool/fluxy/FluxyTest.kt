@@ -7,6 +7,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import kotlin.random.Random
 
 class FluxyTest {
 
@@ -32,14 +33,14 @@ class FluxyTest {
     }
 
     @Test
-    @Repeat(10)
+    @Repeat(3)
     fun `initial state`() {
         Assert.assertTrue(storeOne.state.content == "initial")
         Assert.assertTrue(storeTwo.state.content == "initial")
     }
 
     @Test
-    @Repeat(10)
+    @Repeat(3)
     fun `dispatch action change one store`() {
         dispatcher.dispatch(TestOneAction("test"))
         Assert.assertTrue(storeOne.state.content == "test")
@@ -47,7 +48,7 @@ class FluxyTest {
     }
 
     @Test
-    @Repeat(10)
+    @Repeat(3)
     fun `dispatch action change two store`() {
         dispatcher.dispatch(TestTwoAction("test"))
         Assert.assertTrue(storeTwo.state.content == "test")
@@ -55,7 +56,7 @@ class FluxyTest {
     }
 
     @Test
-    @Repeat(10)
+    @Repeat(3)
     fun `dispatch action change one and two store`() {
         dispatcher.dispatch(TestAction("test"))
         Assert.assertTrue(storeOne.state.content == "test")
@@ -63,7 +64,7 @@ class FluxyTest {
     }
 
     @Test
-    @Repeat(10)
+    @Repeat(3)
     fun `dispatch action change none store`() {
         dispatcher.dispatch(TestNoAction("test"))
         Assert.assertTrue(storeOne.state.content == "initial")
@@ -71,7 +72,7 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(10)
+    @Repeat(3)
     fun `dispatch multiple action change state`() {
         runBlocking {
             val states = mutableListOf<TestState>()
@@ -81,9 +82,9 @@ class FluxyTest {
                 }
             }
 
-            dispatcher.dispatch(TestOneAction("test1"))
-            dispatcher.dispatch(TestOneAction("test2"))
-            dispatcher.dispatch(TestOneAction("test3"))
+            dispatcher.dispatch(TestOneAction("test1",1))
+            dispatcher.dispatch(TestOneAction("test2",1))
+            dispatcher.dispatch(TestOneAction("test3",1))
 
             Assert.assertTrue(storeOne.state.content == "test3")
             Assert.assertTrue(storeTwo.state.content == "initial")
@@ -98,7 +99,7 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(2)
+    @Repeat(3)
     fun `dispatch wait for all stores to finish`() {
         val states = mutableListOf<TestState>()
         val job = GlobalScope.launch(start = CoroutineStart.UNDISPATCHED) {
@@ -117,7 +118,7 @@ class FluxyTest {
             dispatcher.dispatch(TestOneAction("test1"))
         }
         GlobalScope.launch(Dispatchers.IO) {
-            dispatcher.dispatch(TestTwoAction("test1", 50))
+            dispatcher.dispatch(TestTwoAction("test1", 5))
         }
 
         runBlocking {
@@ -132,16 +133,16 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(4)
+    @Repeat(3)
     fun `multi dispatch`() {
         runBlocking {
             val job = GlobalScope.launch {
-                dispatcher.dispatch(TestOneAction("test1", 50))
+                dispatcher.dispatch(TestOneAction("test1", 5))
             }
 
             Assert.assertFalse(storeOne.state.content == "test1")
 
-            delay(10)
+            delay(1)
 
             dispatcher.dispatch(TestOneAction("test2"))
             job.join()
@@ -151,7 +152,7 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(10)
+    @Repeat(3)
     fun `conditional dispatch`() {
 
         dispatcher.dispatch(TestOneAction("test1"))
@@ -162,7 +163,7 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(10)
+    @Repeat(3)
     fun `one store dont block other`() {
         runBlocking {
             GlobalScope.launch {
@@ -171,7 +172,7 @@ class FluxyTest {
 
             Assert.assertFalse(storeOne.state.content == "test1")
 
-            delay(50)
+            delay(1)
 
             dispatcher.dispatch(TestTwoAction("test2"))
 
@@ -180,7 +181,7 @@ class FluxyTest {
     }
 
     @Test(timeout = 1000)
-    @Repeat(2)
+    @Repeat(3)
     fun `one store dont block others action`() {
         runBlocking {
             GlobalScope.launch {
@@ -189,7 +190,7 @@ class FluxyTest {
 
             Assert.assertFalse(storeOne.state.content == "test1")
 
-            delay(50)
+            delay(1)
 
             dispatcher.dispatch(TestTwoAction("test2"))
 
@@ -198,7 +199,7 @@ class FluxyTest {
     }
 
     @Test(timeout = 10000)
-    @Repeat(10)
+    @Repeat(3)
     fun `hot flow emit before state`() {
         runBlocking {
             val states = mutableListOf<TestState>()
@@ -215,7 +216,7 @@ class FluxyTest {
     }
 
     @Test(timeout = 10000)
-    @Repeat(10)
+    @Repeat(3)
     fun `cold flow don't emit before state`() {
         runBlocking {
             val states = mutableListOf<TestState>()
@@ -231,5 +232,26 @@ class FluxyTest {
             Assert.assertTrue(states.size == 0)
             Assert.assertTrue(storeOne.state.content == "test")
         }
+    }
+
+    @Test
+    @Repeat(3)
+    fun `simultaneous dispatches`() {
+        runBlocking {
+            val job1 = GlobalScope.launch {
+                dispatcher.dispatchStrict(TestAction("1", 10))
+            }
+            delay(1)
+            val job2 = GlobalScope.launch {
+                dispatcher.dispatch(TestTwoAction("2"))
+            }
+
+            job1.join()
+            job2.join()
+
+            Assert.assertTrue(storeOne.state.content == "1")
+            Assert.assertTrue(storeTwo.state.content == "2")
+        }
+
     }
 }

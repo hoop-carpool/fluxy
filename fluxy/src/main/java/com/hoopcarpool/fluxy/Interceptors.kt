@@ -59,7 +59,7 @@ class StoreInterceptor(private val logger: Logger, private val stores: List<Flux
         val storesChanged = mutableListOf<StoresChanges>()
         stores.forEach { store ->
             if (store.canHandle(chain.action)) {
-                logger.d("Dispatching ${chain.action} on $store ")
+                logger.d("Dispatching ${chain.action} on ${store::class.java.name} ")
                 val newState = store.dispatch(chain.action)
                 if (newState != null) storesChanged.add(StoresChanges(store, newState))
             }
