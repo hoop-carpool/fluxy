@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
  *
  * Subscribe to [BaseAction] via [reduce]
  */
-abstract class FluxyStore<S : Any> {
+abstract class FluxyStore<STATE : Any> {
 
     /**
      * Map that contains the reducers for each [BaseAction]
@@ -27,18 +27,18 @@ abstract class FluxyStore<S : Any> {
     /** Var por testing purposes  */
     var initTime: Long = 0
 
-    val state: S
+    val state: STATE
         get() = stateFlow.value
 
     /** Hook for write only property */
-    var newState: S
+    var newState: STATE
         get() = throw UnsupportedOperationException("This is a write only property")
         set(value) {
             performStateChange(value)
         }
 
     /** Extension for setting a state as a new state */
-    fun S.asNewState() = performStateChange(this)
+    fun STATE.asNewState() = performStateChange(this)
 
     private val stateFlow = MutableStateFlow(initialState())
 
@@ -47,27 +47,27 @@ abstract class FluxyStore<S : Any> {
      *
      * If [hotStart] is true, emits the current [state]
      */
-    fun flow(hotStart: Boolean = true): Flow<S> = stateFlow.drop(count = if(hotStart) 0 else 1).distinctUntilChanged()
+    fun flow(hotStart: Boolean = true): Flow<STATE> = stateFlow.drop(count = if(hotStart) 0 else 1).distinctUntilChanged()
 
     abstract fun init()
 
     /**
      * Utility function that emit state changes at Main thread
      */
-    suspend inline fun observe(hotStart: Boolean = true, crossinline block: (S) -> Unit) {
+    suspend inline fun observe(hotStart: Boolean = true, crossinline block: (STATE) -> Unit) {
         flow(hotStart).collect {
             withContext(Dispatchers.Main) { block(it) }
         }
     }
 
-    private fun performStateChange(newState: S): Boolean {
+    private fun performStateChange(newState: STATE): Boolean {
         if (newState != state) stateFlow.value = newState
         return newState != state
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun initialState(): S {
-        val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<S>
+    private fun initialState(): STATE {
+        val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<STATE>
         try {
             val constructor = type.getDeclaredConstructor()
             constructor.isAccessible = true
@@ -95,7 +95,7 @@ abstract class FluxyStore<S : Any> {
      * There's only one reducer per [BaseAction] per [FluxyStore]
      */
     private var reducing = false
-    fun dispatch(action: BaseAction): S? {
+    fun dispatch(action: BaseAction): STATE? {
         return synchronized(this) {
             if (reducing) throw CyclicActionDispatchException(action, this)
 
@@ -122,7 +122,7 @@ abstract class FluxyStore<S : Any> {
     /**
      * Suspend function until desirable [Result] where in a concluded state
      */
-    suspend fun <R> onConcluded(hotStart: Boolean = true, select: (S) -> Result<R>): ConcludedResult<R> {
+    suspend fun <R> onConcluded(hotStart: Boolean = true, select: (STATE) -> Result<R>): ConcludedResult<R> {
         return flow(hotStart).map { select(it) }.dropWhile { !it.hasConcluded() }.take(1).first().conclude()!!
     }
 }
