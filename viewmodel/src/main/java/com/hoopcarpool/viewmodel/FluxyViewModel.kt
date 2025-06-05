@@ -24,7 +24,7 @@ open class FluxyViewModel<VIEW_STATE, SIDE_EFFECT : SideEffect> {
     val stateFlow = MutableStateFlow(initialState())
 
     fun publishSideEffect(sideEffect: SIDE_EFFECT) {
-        sideEffectChannel.offer(sideEffect)
+        sideEffectChannel.trySend(sideEffect)
     }
 
     fun SIDE_EFFECT.publish() {
